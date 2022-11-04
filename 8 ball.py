@@ -1,5 +1,6 @@
-import random, sys
-# This defines my fuction for the 8 ball and possible outcomes
+import random
+import sys
+# This defines my function for the 8-ball and possible outcomes
 
 
 def shake_ball(outcome):
