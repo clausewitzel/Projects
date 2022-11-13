@@ -1,8 +1,7 @@
+# Thsi is program that simulates the 8 ball toy
 import random
 import sys
 # This defines my function for the 8-ball and possible outcomes
-
-
 def shake_ball(outcome):
     if outcome == 1:
         print('Try again later...')
@@ -18,9 +17,9 @@ def shake_ball(outcome):
         print('Absolutely')
     elif outcome == 7:
         print('No way jose')
+
+
 # This is the main program loop
-
-
 while True:
     print('Would you like to ask the (8) Ball a question')
     answer = input()
