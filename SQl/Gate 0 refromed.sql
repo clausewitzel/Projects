@@ -15,7 +15,7 @@ WITH PAIDCLAIMS AS (
             SELECT
                 C.PK
                 ,CC.BILLED
-                ,C.TRC_INVESTIGATION_ID
+                ,C.LRG_INVESTIGATION_ID
                 ,RE.ASSIGNEDAUDITORID
 			FROM
                 rdp..TBLCLAIM C
@@ -28,19 +28,19 @@ WITH PAIDCLAIMS AS (
                                  rdp..TBLCLAIM
                                  LEFT JOIN PAIDCLAIMS PD ON PD.CLAIMID = CC.PK
 							 WHERE
-                                 CC.TRC_INVESTIGATION_ID = C.TRC_INVESTIGATION_ID
-                                 AND CC.TRC_CLAIM_STATUS = 2
+                                 CC.LRG_INVESTIGATION_ID = C.LRG_INVESTIGATION_ID
+                                 AND CC.LRG_CLAIM_STATUS = 2
                                  AND PD.MARKED IS NULL --This removes claims that are paid but have not entered claim status 2 yet
 							 ) CC
 	    WHERE
                 1=1
                 AND C.DATEFILLED > DATEADD(MONTH, -24, GETDATE())
-                AND C.TRC_CLAIM_STATUS IN (2) --Claim status 2 is billed
+                AND C.LRG_CLAIM_STATUS IN (2) --Claim status 2 is billed
                 )
 --Investigations creates a pivot which groups investigations by assigned team member and will remove any investigations where team members of the group out reach team have nothing assigned
 ,INVESTIGATIONS AS(
                    SELECT
-                       PVT.TRC_INVESTIGATIONS_ID [INV]
+                       PVT.LRG_INVESTIGATIONS_ID [INV]
                        ,PVT.BILLED
                        ,PVT.[401]
                        ,PVT.[433]
@@ -66,7 +66,7 @@ WITH PAIDCLAIMS AS (
 --Max dates will select only the most recent date an investigation received a message
 , MAXDATES AS (
                SELECT 
-                   C.TRC_INVESTIGATION_ID              [INV]
+                   C.LRG_INVESTIGATION_ID              [INV]
                    ,MAX(CAST(RN.DATECREATED AS DATE))) [MSGDATE]
 			   FROM
                    CLAIMS C
@@ -74,7 +74,7 @@ WITH PAIDCLAIMS AS (
                    LEFT JOIN rdp.opd.RECOVERYNOTE  RN ON RN.RECOVERYEFFORTID  = RC.RECOVERYEFFFORTID
                    LEFT JOIN rdp.opd.RECOVERYEFFORT RE ON RE.RECOVERYEFFORTID = RC.RECOVERYEFFORTID
 			   GROUP BY 
-                   C.TRC_INVESTIGATION_ID ,RE.RECOVERYEFFORTD
+                   C.LRG_INVESTIGATION_ID ,RE.RECOVERYEFFORTD
                    )
 SELECT DISTINCT
     CL.CLIENTNAME [CLIENT]
@@ -86,11 +86,11 @@ SELECT DISTINCT
     ,IR.SELFFUNDEDPLANNAME [GROUP NAME]
 FROM
     INVESTIGAITONS INV
-    LEFT JOIN rdp..TBLCLAIM           C ON C.TRC_INVESTIGATION_ID = INV.INV
+    LEFT JOIN rdp..TBLCLAIM           C ON C.LRG_INVESTIGATION_ID = INV.INV
     LEFT JOIN MAXDATES               MD ON MD.INV = INV.INV
     LEFT JOIN rdp.opd.RECOVERYCLAIM  RC ON RC.CLAIMID = C.PK
     LEFT JOIN rdp.opd.RECOVERYEFFORT RE ON RE.RECOVERYEFFORTID = RC.RECOVERYEFFORTID
     LEFT JOIN rdp..TBLAUDITOR         A ON A.PKAUDITOR = RE.ASSIGNEDAUDITORID 
     LEFT JOIN rdp..TBLINVESTIGATION   I ON INV.INV = I.PKINVESTIGATION
-    LEFT JOIN rdp..TBLCLIENT         CL ON CL.PKCLIENT = C.TRC_CLIENT_ID 
+    LEFT JOIN rdp..TBLCLIENT         CL ON CL.PKCLIENT = C.LRG_CLIENT_ID 
     LEFT JOIN rdp..TBLINVESTIGATION   I ON I.PKINVESTIGATION
